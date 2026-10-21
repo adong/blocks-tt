@@ -26,6 +26,7 @@
     const w = innerWidth, h = innerHeight;
     document.body.classList.toggle('short', h < 520);
     document.body.classList.toggle('narrow', w < 640);
+    document.body.classList.toggle('stack', w < 920 && h >= 520);
   };
 
   U.show = function (name) {

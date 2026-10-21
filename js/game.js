@@ -675,6 +675,53 @@
       return BT.check(opts);
     },
     sabotage: () => Object.keys(BT.check.SABOTAGE),
+    // visit every screen in a language and list the English still showing (Kit.lang.untranslated)
+    async tour(lang) {
+      Kit.lang.set(lang || 'zh');
+      const left = new Set();
+      const tick = () => new Promise((r) => setTimeout(r, 60));
+      const look = async () => { await tick(); for (const s of Kit.lang.untranslated()) left.add(s); };
+      title(); await look();
+      pick('tommy', false); await look();
+      $('wlist').querySelector('.del') && $('wlist').querySelector('.del').click(); await look();
+      this.start({ kid: 'tommy', seed: 'TOUR 1' }); await look();
+      for (const k of ['KeyF', 'KeyR', 'KeyG']) { this.key(k); await look(); this.key(k); }
+      this.key('KeyZ'); await look();
+      this.key('KeyN'); await look();
+      jumpTap(); jumpTap(); await look();
+      this.call('house'); this.step(0.95); await look(); this.step(4); await look();
+      this.key('KeyE'); await look(); this.key('Escape');
+      this.key('KeyQ'); await look(); this.key('Escape');
+      this.key('KeyB'); await look(); this.key('Escape');
+      this.key('KeyH'); await look();
+      G.sess.setTool('ruler'); G.sess.ruler = { a: { x: 10, y: 20, z: 10 }, b: { x: 12, y: 20, z: 15 } }; BT.render.rulerText = '3 × 1 × 6'; BT.ui.tools(G.sess); await look(); G.sess.setTool('ruler');
+      G.sess.complete('tower'); this.step(0.2); await look();
+      this.step(3.2); pause(); await look(); resume();
+      BT.ui.win(G.sess); overlay('win'); await look(); closeOverlay();
+      BT.ui.toast('🍪 COOKIE FROM TEDDY!'); BT.ui.toast('⭐ GOLDEN STAR! 2 / 5'); BT.ui.toast('📦 FILLED 60 BLOCKS!'); BT.ui.toast('WELCOME BACK, TOMMY!'); await look();
+      Kit.help.open(); await look(); Kit.help.close();
+      this.start({ kid: 'teddy', two: true, seed: 'TOUR 2' }); await look();
+      this.key('Tab'); this.step(0.1); await look();
+      this.call(); this.step(0.2); await look();
+      title(); await look();
+      return [...left];
+    },
+    // the HUD's buttons mustn't cover each other, the kit's left-edge buttons or the touch controls
+    layout() {
+      const vis = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && el.closest('.hidden') === null; };
+      const sel = '#tl > *, #quest, #tr > *, #tools > *, #hotbar, #stick, #acts > *, #toolHint, #kit-help-btn, #kit-lang-btn, #kit-sound-btn';
+      const els = [...document.querySelectorAll(sel)].filter(vis);
+      const kit = els.filter((e) => e.id.startsWith('kit-'));
+      const all = els;
+      const bad = [];
+      for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+        const a = all[i].getBoundingClientRect(), b = all[j].getBoundingClientRect();
+        if (all[i].contains(all[j]) || all[j].contains(all[i])) continue;
+        if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) bad.push(`${all[i].id || all[i].className} × ${all[j].id || all[j].className}`);
+      }
+      const off = all.filter((e) => { const r = e.getBoundingClientRect(); return r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1; }).map((e) => e.id || e.className);
+      return { w: innerWidth, h: innerHeight, n: all.length, kit: kit.length, bad, off };
+    },
     G,
   };
 

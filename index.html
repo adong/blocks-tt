@@ -184,6 +184,7 @@
   .tbtn.on { background: var(--yellow); box-shadow: 0 4px 0 var(--ink), 0 0 0 3px #fff; }
   .tbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
   #toolsBtn { display: none; }
+  .touch #tools { top: calc(max(8px, env(safe-area-inset-top)) + 62px); translate: 0 0; }
   #hotbar { position: absolute; left: 50%; translate: -50% 0; bottom: max(10px, env(safe-area-inset-bottom)); display: flex; gap: 4px; padding: 5px; border-radius: 16px; background: rgba(20, 18, 31, 0.55); border: 3px solid rgba(255, 255, 255, 0.55); }
   .slot { position: relative; width: var(--slot); height: var(--slot); border-radius: 11px; background: rgba(255, 255, 255, 0.18); border: 2px solid rgba(255, 255, 255, 0.35); padding: 3px; }
   .slot img { width: 100%; height: 100%; display: block; pointer-events: none; }
@@ -262,11 +263,25 @@
   .narrow #quest { top: calc(max(8px, env(safe-area-inset-top)) + 60px); }
   .narrow #toolHint { top: calc(max(8px, env(safe-area-inset-top)) + 112px); }
   .narrow .chip small { display: none; }
+  .narrow .chip { padding-right: 3px; height: 44px; }
+  .narrow .chip > div { display: none; }
+  .narrow #tl { gap: 6px; }
+  .narrow #tr { gap: 6px; }
+  .narrow .ibtn { width: 40px; height: 40px; font-size: 18px; border-radius: 12px; }
+  .narrow .call { width: 44px; height: 44px; }
+  .narrow .callmenu { width: 26px; height: 26px; margin-top: 9px; font-size: 13px; }
   .touch.short #tools, .touch.narrow #tools { display: none; }
   .touch.short #tools.open, .touch.narrow #tools.open { display: flex; top: calc(max(8px, env(safe-area-inset-top)) + 56px); translate: 0 0; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: min(300px, 60vw); }
+  .touch.narrow #tools.open { top: calc(max(8px, env(safe-area-inset-top)) + 112px); flex-direction: column; width: auto; }
+  .narrow #toolHint { max-width: calc(100vw - 170px); }
   .touch.short #toolsBtn, .touch.narrow #toolsBtn { display: grid; }
-  .touch.narrow #hotbar { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 168px); }
-  .touch.narrow #selName { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 168px + var(--slot) + 24px); }
+  /* a phone on its side: the hotbar sits between the stick and the big buttons */
+  .touch.short:not(.narrow) { --slot: 34px; }
+  .touch.short:not(.narrow) #hotbar { left: calc(max(var(--gutter), env(safe-area-inset-left)) + 134px); translate: 0 0; gap: 3px; padding: 4px; }
+  .touch.short:not(.narrow) #toolHint { top: calc(max(8px, env(safe-area-inset-top)) + 120px); }
+  /* too narrow for the stick, the hotbar and the big buttons side by side: the hotbar goes up above them */
+  .touch.stack #hotbar { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 176px); }
+  .touch.stack #selName { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 176px + var(--slot) + 24px); }
 </style>
 </head>
 <body>
@@ -366,7 +381,7 @@
 <!-- paused -->
 <div id="pause" class="screen dim hidden">
   <p class="big">PAUSED</p>
-  <p class="tag" id="pauseWorld"></p>
+  <p class="tag" id="pauseWorld" data-no-lang></p>
   <div class="row">
     <button class="btn" id="resumeBtn">▶ RESUME <kbd>P</kbd></button>
     <button class="btn mint" id="saveBtn">💾 SAVE</button>
