@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /* Screenshots with headless Chrome over the DevTools protocol (node 22's built-in WebSocket, no npm).
    node tools/shoot.js [steps.json] [outdir] [width height mobile]
-   Defaults: tools/shots.json, docs/, 1280 x 800. Serve ~/claude-games first (the preview server on port 8787), or set
+   Defaults: tools/shots.json, docs/, 1280 x 800. Serve ~/claude-games first (the preview server on port 8798), or set
    URL=... Each step may have js (run in the page, using the window.game hooks), wait (ms) and shot (file name).
-   From TT Word Pop (and Snow TT Bros, Gomoku TT). docs/screenshot.jpg: node tools/shoot.js tools/shots.json docs 1200 750
+   From ProTigy (and TT Word Pop, Snow TT Bros, Gomoku TT). docs/screenshot.jpg: node tools/shoot.js tools/shots.json docs 1200 750
    Runs muted (--mute-audio, and claudeGames.muted = 1 before the page loads); UNMUTED=1 turns that off.
-   Offline, from a file: URL=file://$PWD/dist/protigy.html CHROME_FLAGS='--host-resolver-rules=MAP * ~NOTFOUND' node tools/shoot.js ... */
+   Offline, from a file: URL=file://$PWD/dist/blocks-tt.html CHROME_FLAGS='--host-resolver-rules=MAP * ~NOTFOUND' node tools/shoot.js ... */
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -16,7 +16,7 @@ const [stepsFile = path.join(__dirname, 'shots.json'), outDir = path.join(dir, '
 const steps = JSON.parse(fs.readFileSync(stepsFile, 'utf8'));
 fs.mkdirSync(outDir, { recursive: true });
 const port = 9400 + Math.floor(Math.random() * 400);
-const prof = fs.mkdtempSync(path.join(require('os').tmpdir(), 'mathquesttt-chrome-'));
+const prof = fs.mkdtempSync(path.join(require('os').tmpdir(), 'blockstt-chrome-'));
 const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
   '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, `--window-size=${W},${H}`,
   '--no-first-run', '--no-default-browser-check', '--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--hide-scrollbars', '--mute-audio',
@@ -49,7 +49,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (mobile === '1') await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
     // tests run muted (Alan works with the games in the background): the kit's sound and the voice both read this
     if (!process.env.UNMUTED) await send('Page.addScriptToEvaluateOnNewDocument', { source: "try { localStorage.setItem('claudeGames.muted', '1'); } catch (e) {}" });
-    await send('Page.navigate', { url: process.env.URL || 'http://localhost:8787/math-quest-tt/' });
+    await send('Page.navigate', { url: process.env.URL || 'http://localhost:8798/blocks-tt/' });
     await sleep(4000);
     for (const s of steps) {
       if (s.size) await send('Emulation.setDeviceMetricsOverride', { width: s.size[0], height: s.size[1], deviceScaleFactor: 1, mobile: false });

@@ -277,22 +277,34 @@
       clouds.add(c);
     }
     scene.add(clouds);
-    // the sea, all round the island (the island's own water is drawn by its chunks)
+    // the sea, all round the island (the island's own water is drawn by its chunks). It's drawn with the blocks'
+    // own shader, water over a sandy floor deep down, so it matches the island's sea right up to the edge.
     ocean = new T.Group();
-    const om = new T.MeshLambertMaterial({ color: '#3aa0de' });
-    const W = BT.W, D = BT.D, FAR = 700;
-    for (const [x, z, w, d] of [[-FAR, -FAR, 2 * FAR + W, FAR], [-FAR, D, 2 * FAR + W, FAR], [-FAR, 0, FAR, D], [W, 0, FAR, D]]) {
-      const m = new T.Mesh(new T.PlaneGeometry(w, d), om);
-      m.rotation.x = -Math.PI / 2;
-      m.position.set(x + w / 2, BT.SEA - 0.02, z + d / 2);
+    const W = BT.W, D = BT.D, FAR = 600;
+    const rects = [[-FAR, -FAR, 2 * FAR + W, FAR], [-FAR, D, 2 * FAR + W, FAR], [-FAR, 0, FAR, D], [W, 0, FAR, D]];
+    const sheet = (y, tile, sky, mat, order) => {
+      const pos = [], uv = [], info = [], index = [];
+      for (const [x, z, w, d] of rects) {
+        const b = pos.length / 3;
+        for (const [px, pz] of [[x, z], [x + w, z], [x + w, z + d], [x, z + d]]) { pos.push(px, y, pz); uv.push(px, pz); info.push(tile, 1, sky, 0); }
+        index.push(b, b + 2, b + 1, b, b + 3, b + 2);
+      }
+      const g = new T.BufferGeometry();
+      g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+      g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
+      g.setAttribute('info', new T.Float32BufferAttribute(info, 4));
+      g.setIndex(index);
+      const m = new T.Mesh(g, mat);
+      m.renderOrder = order;
+      m.frustumCulled = false;
       ocean.add(m);
-    }
-    ocean.userData.mat = om;
+    };
+    sheet(4, BT.blocks.TILE.sand, 0.2, mats[0], 0); // as deep and dim as the island's sea floor at its edge
+    sheet(BT.SEA, BT.blocks.TILE.water, 1, mats[1], 1);
     scene.add(ocean);
   }
 
   const SKY_DAY = [0.56, 0.85, 1.0], SKY_NIGHT = [0.13, 0.16, 0.36], SKY_DUSK = [1.0, 0.62, 0.48];
-  const SEA_DAY = [0.23, 0.63, 0.87], SEA_NIGHT = [0.06, 0.12, 0.28];
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   R.updateSky = function (sess, dt, underwater) {
     const a = sess.sun(), d = sess.daylight();
@@ -328,8 +340,6 @@
       c.position.x += c.userData.speed * dt;
       if (c.position.x > 190) c.position.x = -100;
     }
-    const sea = mix3(SEA_NIGHT, SEA_DAY, d);
-    ocean.userData.mat.color.setRGB(sea[0], sea[1], sea[2]).convertSRGBToLinear();
     R.lightNow = { d, tw, sun };
   };
 
