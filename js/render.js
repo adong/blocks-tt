@@ -63,7 +63,7 @@
       vec2 f = clamp(fract(uv), 0.01, 0.99);
       vec4 tex = texture2D(uAtlas, vec2((mod(t, 8.0) + f.x) / 8.0, 1.0 - (floor(t / 8.0) + 1.0 - f.y) / 4.0));
       #endif
-      vec3 light = uSun * pow(vInfo.z, 1.5) + vec3(1.0, 0.8, 0.52) * pow(vInfo.w, 1.3) * 1.1 + vec3(0.07, 0.08, 0.13);
+      vec3 light = uSun * pow(vInfo.z, 1.5) + vec3(1.0, 0.8, 0.52) * pow(vInfo.w, 1.3) * 1.1 + vec3(0.09, 0.1, 0.16);
       vec3 c = tex.rgb * vInfo.y * light;
       if (t == 11.0) c = tex.rgb * (1.02 + 0.35 * uNight);
       c = mix(c, uFog, smoothstep(uFogNear, uFogFar, vDist));
@@ -291,7 +291,7 @@
     scene.add(ocean);
   }
 
-  const SKY_DAY = [0.56, 0.85, 1.0], SKY_NIGHT = [0.09, 0.11, 0.27], SKY_DUSK = [1.0, 0.62, 0.48];
+  const SKY_DAY = [0.56, 0.85, 1.0], SKY_NIGHT = [0.13, 0.16, 0.36], SKY_DUSK = [1.0, 0.62, 0.48];
   const SEA_DAY = [0.23, 0.63, 0.87], SEA_NIGHT = [0.06, 0.12, 0.28];
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   R.updateSky = function (sess, dt, underwater) {
@@ -306,12 +306,12 @@
     scene.fog.near = near; scene.fog.far = far;
     uniforms.uFog.value.set(fog[0], fog[1], fog[2]);
     uniforms.uFogNear.value = near; uniforms.uFogFar.value = far;
-    let sun = mix3([0.24, 0.29, 0.48], [1.0, 0.98, 0.94], d);
+    let sun = mix3([0.36, 0.42, 0.66], [1.0, 0.98, 0.94], d); // moonlight is bright enough to build by
     sun = mix3(sun, [1.0, 0.74, 0.55], tw * 0.45);
     uniforms.uSun.value.set(sun[0], sun[1], sun[2]);
     uniforms.uNight.value = 1 - d;
     uniforms.uTime.value += dt;
-    hemi.intensity = 0.3 + 0.55 * d;
+    hemi.intensity = 0.45 + 0.4 * d;
     dirLight.intensity = 0.15 + 0.6 * d;
     hemi.color.setRGB(sun[0], sun[1], sun[2]).convertSRGBToLinear();
     const sd = tmpV.set(Math.cos(a), Math.sin(a), 0.32).normalize();

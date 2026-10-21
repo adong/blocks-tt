@@ -188,13 +188,16 @@
   Session.prototype.pieceSpot = function () {
     const p = this.P(), aim = this.aim();
     const f = BT.build.facingOf(p.yaw);
-    let o;
-    if (aim.hit && aim.hit.dist > 1.5) o = aim.hit.ny === 1 ? aim.hit.place : { x: aim.hit.place.x, y: aim.hit.place.y, z: aim.hit.place.z };
-    else {
-      // nothing in reach: a few blocks ahead, on the ground
-      const [, F] = BT.build.AXES[f];
-      const x = Math.floor(p.pos.x) + F[0] * 4, z = Math.floor(p.pos.z) + F[1] * 4;
-      o = { x, y: Math.max(1, Math.min(BT.H - 8, p.flying() ? Math.floor(p.pos.y) : this.world.heightAt(x, z))), z };
+    const [, F] = BT.build.AXES[f];
+    const px = Math.floor(p.pos.x), pz = Math.floor(p.pos.z);
+    const ahead = (o) => (o.x - px) * F[0] + (o.z - pz) * F[1];
+    let o = aim.hit ? { x: aim.hit.place.x, y: aim.hit.place.y, z: aim.hit.place.z } : null;
+    if (!o || ahead(o) < 3) {
+      // nothing in reach, or too close: 3 blocks ahead of you, on the ground (or in the air where you fly)
+      const x = px + F[0] * 3, z = pz + F[1] * 3;
+      const ground = this.world.heightAt(x, z);
+      const y = p.flying() && Math.floor(p.pos.y) > ground + 1 ? Math.floor(p.pos.y) : ground;
+      o = { x, y: Math.max(1, Math.min(BT.H - 8, y)), z };
     }
     return { origin: o, facing: f };
   };

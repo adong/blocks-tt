@@ -491,6 +491,7 @@
       const aim = G.cheer ? null : s.aim();
       R.updateHelpers(s, { aim, easy: p.easy, block: s.block(), tool: s.tool, hideAim: !!G.cheer || G.view === 'cheer' }, G.t);
       R.updateHand(s.block(), G.view === 'first' && !G.cheer, dt, G.t, p.walked);
+      $('crosshair').classList.toggle('hidden', !!G.cheer || !!BT.ui.screen);
       G.uiT += dt;
       if (G.uiT > 0.5) {
         G.uiT = 0;
@@ -527,7 +528,12 @@
       const k = Math.min(1, G.cheer.t / 0.6);
       const fy = p.yaw;
       const fx = -Math.sin(fy), fz = -Math.cos(fy);
-      const dist = 3.4;
+      // as far as 3.4 blocks in front, but never inside a block
+      let dist = 0.6;
+      for (let k = 0.6; k <= 3.4; k += 0.15) {
+        if (s.world.solidAt(Math.floor(p.pos.x + fx * k), Math.floor(p.pos.y + 1.3), Math.floor(p.pos.z + fz * k))) break;
+        dist = k;
+      }
       tmp.set(p.pos.x + fx * dist, p.pos.y + 1.3, p.pos.z + fz * dist);
       cam.position.lerp(tmp, k);
       cam.lookAt(p.pos.x, p.pos.y + p.h * 0.6, p.pos.z);

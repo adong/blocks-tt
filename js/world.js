@@ -330,7 +330,10 @@
       for (let x = 4; x < W - 4; x++) {
         const h = this.heightAt(x, z);
         if (blocks[idx(x, h - 1, z)] !== ID.grass || h > SEA + 8) continue;
-        const d = (x - sx) ** 2 + (z - sz) ** 2 + (pond ? Math.max(0, 100 - ((x - pond.x) ** 2 + (z - pond.z) ** 2)) : 0);
+        // not down in a hole: the ground round about is no higher than here
+        let hole = 0;
+        for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) hole = Math.max(hole, H2(x + dx, z + dz) - h);
+        const d = (x - sx) ** 2 + (z - sz) ** 2 + (pond ? Math.max(0, 100 - ((x - pond.x) ** 2 + (z - pond.z) ** 2)) : 0) + hole * 400;
         if (d < best) { best = d; spawn = { x, z, y: h }; }
       }
     if (!spawn) spawn = { x: 48, z: 48, y: this.heightAt(48, 48) };

@@ -148,7 +148,7 @@
       if (q.id === 'tower') prog = `🗼 ${Math.min(tower, 10)} / 10`;
       return `<div class="qrow ${done ? '' : 'off'}"><span class="emo">${done ? q.sticker : q.emoji}</span><div><b>${q.name}</b><small>${q.hint}</small></div><span class="done">${done ? '✔ DONE' : prog}</span></div>`;
     }).join('');
-    $('questPanel').innerHTML = `<h2>TOMMY'S QUESTS</h2>${rows}`;
+    $('questPanel').innerHTML = `<h2>${sess.active.toUpperCase()}'S QUESTS</h2>${rows}`;
   };
 
   // ---------- my worlds ----------
