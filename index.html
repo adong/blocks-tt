@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#6fd45a">
+<title>TT Blocks · Teddy &amp; Tommy</title>
+<!-- The game's icon: the same emoji as its card on the dashboard, on a coloured tile. It's the browser tab's icon (the SVG, then
+     a PNG drawn below) and the iPad home screen's (apple-touch-icon). The device's own emoji font draws it: no image files. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20x='2'%20y='2'%20width='60'%20height='60'%20rx='14'%20fill='%236fd45a'%20stroke='%2314121f'%20stroke-width='4'/%3E%3Ctext%20x='32'%20y='44'%20font-size='36'%20text-anchor='middle'%3E%E2%9B%8F%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<script>
+  (function (emoji, tile) {
+    function draw(size, framed) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      if (!g) return '';
+      const u = size / 64;
+      g.fillStyle = tile;
+      if (framed) { // the tab: a rounded tile with the dashboard's dark outline
+        g.beginPath();
+        if (g.roundRect) g.roundRect(2 * u, 2 * u, 60 * u, 60 * u, 14 * u); else g.rect(2 * u, 2 * u, 60 * u, 60 * u);
+        g.fill();
+        g.lineWidth = 4 * u;
+        g.strokeStyle = '#14121f';
+        g.stroke();
+      } else g.fillRect(0, 0, size, size); // the home screen: iOS rounds the corners itself
+      g.font = `${Math.round(size * (framed ? 0.56 : 0.62))}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      g.textAlign = 'center';
+      const m = g.measureText(emoji);
+      const up = m.actualBoundingBoxAscent || size * 0.4, down = m.actualBoundingBoxDescent || 0;
+      g.fillText(emoji, size / 2, size / 2 + (up - down) / 2);
+      try { return c.toDataURL('image/png'); } catch (e) { return ''; }
+    }
+    const tab = draw(64, true), home = draw(180, false);
+    if (tab) document.querySelector('link[rel="icon"]').href = tab;
+    if (home) {
+      const l = document.createElement('link');
+      l.rel = 'apple-touch-icon';
+      l.href = home;
+      document.head.appendChild(l);
+    }
+  })('⛏️', '#6fd45a');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #ffd400; --pink: #ff3d7f; --cyan: #18d4ff; --blue: #2f7cf0; --mint: #3fe0b0; --orange: #ff8a1f; --green: #6fd45a; --red: #ff5a6e;
+    --ink: #14121f; --paper: #fffdf2;
+    --display: 'Bungee', 'Arial Black', Impact, sans-serif;
+    --round: 'Rubik', 'Arial Rounded MT Bold', system-ui, -apple-system, sans-serif;
+    --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    --gutter: 58px; /* the kit's ? / A文 / speaker buttons sit on the left edge, in the middle: everything keeps clear of them */
+    --slot: 46px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; color: #fff; font-family: var(--round); background: #8fd8ff;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  button:focus { outline: none; }
+  button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+  kbd {
+    display: inline-grid; place-items: center; min-width: 19px; height: 19px; padding: 0 4px; margin: 1px;
+    font: 700 11px/1 system-ui, sans-serif; color: var(--ink); background: #fff; border-radius: 6px; box-shadow: 0 2px 0 #9aa;
+  }
+  .touch kbd, .touch .keys { display: none !important; }
+  .emo { font-family: var(--emoji); }
+
+  .btn {
+    font-family: var(--display); font-size: clamp(16px, 2.6vw, 24px); color: var(--ink); line-height: 1.1;
+    background: var(--yellow); border: 4px solid var(--ink); border-radius: 20px; padding: 10px 22px;
+    box-shadow: 0 7px 0 var(--ink), 0 12px 26px rgba(0, 0, 0, 0.25);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.alt { background: var(--cyan); } .btn.mint { background: var(--mint); } .btn.ghost { background: #fff; } .btn.pink { background: #ff8fb8; } .btn.green { background: var(--green); }
+  .btn.small { font-size: clamp(13px, 2vw, 17px); padding: 7px 14px; border-radius: 15px; box-shadow: 0 5px 0 var(--ink); }
+  .pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  .card { background: var(--paper); color: var(--ink); border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); }
+  .keys { font-size: 13px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); }
+  .big {
+    font-family: var(--display); font-size: clamp(28px, 5.5vw, 58px); line-height: 1; color: var(--yellow); transform: rotate(-2deg);
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 6px 0 var(--pink), 0 11px 0 var(--ink);
+  }
+
+  /* ---------- screens ---------- */
+  .screen {
+    position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    gap: clamp(8px, 1.6vh, 14px); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+    text-align: center; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  }
+  .screen > * { flex-shrink: 0; }
+  .dim { background: radial-gradient(ellipse at center, rgba(20, 18, 40, 0.55), rgba(20, 18, 40, 0.85)); }
+  #title { background: radial-gradient(ellipse at center, rgba(20, 18, 40, 0.25), rgba(20, 18, 40, 0) 70%); }
+  .logo { transform: rotate(-3deg); line-height: 0.9; pointer-events: none; }
+  .logo small { display: block; font-family: var(--display); font-size: clamp(15px, min(3.4vw, 3.8vh), 30px); color: #fff; -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 5px 0 var(--blue), 0 9px 0 var(--ink); }
+  .logo big { display: block; margin-top: 8px; font-family: var(--display); font-size: clamp(40px, min(10vw, 12vh), 116px); -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; text-shadow: 0 7px 0 var(--ink), 0 16px 30px rgba(0, 0, 0, 0.3); white-space: nowrap; }
+  .logo big span { display: inline-block; padding: 0 0.02em; }
+  .logo big span:nth-child(5n+1) { color: #ff5a6e; } .logo big span:nth-child(5n+2) { color: var(--yellow); } .logo big span:nth-child(5n+3) { color: #6fd45a; }
+  .logo big span:nth-child(5n+4) { color: #3fa2ff; } .logo big span:nth-child(5n) { color: #ff8fd0; }
+  .logo big span:nth-child(odd) { transform: translateY(-4px) rotate(-3deg); }
+  .logo big span.sp { width: 0.3em; }
+  .tag { font-size: clamp(14px, 2.2vw, 21px); font-weight: 800; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 0, 0, 0.45); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .profiles { display: flex; gap: clamp(10px, 2vw, 22px); flex-wrap: wrap; justify-content: center; }
+  .prof { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 18px 10px 10px; min-width: min(290px, 86vw); text-align: left; }
+  .prof:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--ink); }
+  .prof img { width: 74px; height: 74px; border-radius: 18px; border: 3px solid var(--ink); background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); flex: none; }
+  .prof.tommy img { background: radial-gradient(circle at 50% 35%, #fff0c8, #ff9f1c); }
+  .prof b { display: block; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1; }
+  .prof small { display: block; font: 800 13px/1.25 var(--round); margin-top: 4px; color: #4a4560; }
+  .prof .go { position: absolute; right: 10px; bottom: -14px; font: 400 13px/1 var(--display); padding: 5px 10px; border-radius: 999px; background: var(--yellow); border: 3px solid var(--ink); }
+  .prof kbd { position: absolute; top: -8px; right: -6px; }
+  .seg { display: inline-flex; border: 4px solid var(--ink); border-radius: 18px; overflow: hidden; box-shadow: 0 5px 0 var(--ink); background: #fff; }
+  .seg button { font: 400 clamp(13px, 2vw, 17px)/1 var(--display); color: var(--ink); padding: 9px 14px; background: #fff; }
+  .seg button.on { background: var(--yellow); }
+  .seg button + button { border-left: 3px solid var(--ink); }
+  .score { font: 400 clamp(14px, 2vw, 18px)/1 var(--display); padding: 7px 14px; border-radius: 999px; background: rgba(20, 18, 31, 0.6); border: 3px solid rgba(255, 255, 255, 0.7); }
+  .credit { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); font-size: 13px; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); pointer-events: none; z-index: 21; }
+
+  /* worlds */
+  .wlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 84vw), 1fr)); gap: 14px; width: min(900px, 100%); }
+  .wcard { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; text-align: left; }
+  .wcard .nm { font: 400 18px/1.1 var(--display); word-break: break-word; }
+  .wcard .meta { font: 800 13px/1.3 var(--round); color: #4a4560; }
+  .wcard .st { font-family: var(--emoji); font-size: 20px; letter-spacing: 2px; }
+  .wcard .st .off { filter: grayscale(1) opacity(0.35); }
+  .wcard .acts { display: flex; gap: 8px; margin-top: 4px; }
+  .wcard .del { margin-left: auto; background: #fff; }
+  .wcard .del.sure { background: var(--red); color: #fff; }
+  .newcard { background: #eaffdf; }
+  .seedrow { display: flex; gap: 8px; align-items: center; }
+  .seedrow input { flex: 1; min-width: 0; font: 800 17px/1 var(--round); padding: 10px 12px; border: 3px solid var(--ink); border-radius: 14px; color: var(--ink); background: #fff; text-transform: uppercase; user-select: text; -webkit-user-select: text; touch-action: manipulation; }
+  .dice { font-size: 24px; width: 50px; height: 46px; border-radius: 14px; background: #fff; border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); font-family: var(--emoji); }
+  .dice:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ---------- the HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #hud > * { pointer-events: auto; }
+  #crosshair { position: fixed; left: 50%; top: 50%; width: 26px; height: 26px; translate: -50% -50%; pointer-events: none; z-index: 9; }
+  #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #fff; border-radius: 3px; box-shadow: 0 0 0 2px rgba(20, 18, 31, 0.75); }
+  #crosshair::before { left: 11px; top: 2px; width: 4px; height: 22px; }
+  #crosshair::after { top: 11px; left: 2px; height: 4px; width: 22px; }
+  .third #crosshair { opacity: 0.7; }
+  #tl { position: absolute; top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); display: flex; gap: 8px; align-items: flex-start; }
+  #tr { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); display: flex; gap: 8px; }
+  .ibtn { width: 46px; height: 46px; border-radius: 14px; font-size: 21px; line-height: 1; display: grid; place-items: center; position: relative;
+    background: rgba(255, 255, 255, 0.92); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); color: var(--ink); font-family: var(--emoji); }
+  .ibtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .ibtn kbd { position: absolute; bottom: -9px; right: -7px; }
+  .ibtn.on { background: var(--yellow); box-shadow: 0 4px 0 var(--ink), 0 0 0 3px #fff; }
+  .chip { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: 14px; background: rgba(20, 18, 31, 0.66); border: 3px solid rgba(255, 255, 255, 0.6); height: 50px; }
+  .chip img { width: 38px; height: 38px; border-radius: 10px; border: 2px solid #fff; background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .chip.tommy img { background: radial-gradient(circle at 50% 35%, #fff0c8, #ff9f1c); }
+  .chip b { display: block; font-family: var(--display); font-weight: 400; font-size: 14px; line-height: 1; }
+  .chip small { display: block; font: 800 12px/1.1 var(--round); margin-top: 2px; white-space: nowrap; }
+  .call { position: relative; width: 52px; height: 52px; border-radius: 50%; padding: 0; border: 3px solid #fff; box-shadow: 0 4px 0 var(--ink), 0 0 0 3px var(--ink);
+    background: radial-gradient(circle at 50% 35%, #fff0c8, #ff9f1c); }
+  .call.teddy { background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .call img { width: 100%; height: 100%; border-radius: 50%; }
+  .call kbd { position: absolute; top: -6px; right: -8px; }
+  .call:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink), 0 0 0 3px var(--ink); }
+  .call.here { box-shadow: 0 4px 0 var(--ink), 0 0 0 3px var(--ink), 0 0 22px rgba(255, 212, 0, 0.95); }
+  .callmenu { width: 30px; height: 30px; margin-top: 11px; border-radius: 10px; font-size: 15px; }
+  #quest { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; translate: -50% 0; display: flex; gap: 10px; align-items: center; padding: 6px 14px; border-radius: 16px;
+    background: rgba(255, 253, 242, 0.95); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); font: 400 15px/1 var(--display); height: 46px; }
+  #quest .q { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+  #quest .q .emo { font-size: 21px; }
+  #quest .q.off .emo { filter: grayscale(1) opacity(0.45); }
+  #quest .q.done .emo { filter: drop-shadow(0 0 4px #ffd400); }
+  #tools { position: absolute; right: max(8px, env(safe-area-inset-right)); top: 50%; translate: 0 -50%; display: flex; flex-direction: column; gap: 10px; }
+  .tbtn { width: 64px; padding: 5px 0 4px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 1px; position: relative;
+    background: rgba(255, 255, 255, 0.94); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); font: 400 10px/1 var(--display); }
+  .tbtn .emo { font-size: 22px; line-height: 1.05; }
+  .tbtn kbd { position: absolute; top: -8px; right: -7px; }
+  .tbtn.on { background: var(--yellow); box-shadow: 0 4px 0 var(--ink), 0 0 0 3px #fff; }
+  .tbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  #toolsBtn { display: none; }
+  #hotbar { position: absolute; left: 50%; translate: -50% 0; bottom: max(10px, env(safe-area-inset-bottom)); display: flex; gap: 4px; padding: 5px; border-radius: 16px; background: rgba(20, 18, 31, 0.55); border: 3px solid rgba(255, 255, 255, 0.55); }
+  .slot { position: relative; width: var(--slot); height: var(--slot); border-radius: 11px; background: rgba(255, 255, 255, 0.18); border: 2px solid rgba(255, 255, 255, 0.35); padding: 3px; }
+  .slot img { width: 100%; height: 100%; display: block; pointer-events: none; }
+  .slot kbd { position: absolute; top: -7px; left: -5px; min-width: 16px; height: 16px; font-size: 10px; }
+  .slot.sel { background: rgba(255, 212, 0, 0.5); border-color: #fff; box-shadow: 0 0 0 3px var(--yellow); transform: translateY(-4px); }
+  .slot.bag { background: rgba(255, 255, 255, 0.92); border-color: var(--ink); font-family: var(--emoji); font-size: 22px; display: grid; place-items: center; }
+  #selName { position: absolute; left: 50%; translate: -50% 0; bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--slot) + 26px); font: 400 15px/1 var(--display); color: #fff;
+    -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; pointer-events: none; transition: opacity 0.4s; white-space: nowrap; }
+  #toolHint { position: absolute; left: 50%; translate: -50% 0; top: calc(max(8px, env(safe-area-inset-top)) + 58px); padding: 6px 12px; border-radius: 12px; background: rgba(255, 212, 0, 0.95);
+    color: var(--ink); border: 3px solid var(--ink); font: 800 14px/1.2 var(--round); pointer-events: none; text-align: center; max-width: min(520px, 80vw); }
+  #lookHint { position: fixed; left: 50%; top: 62%; translate: -50% 0; z-index: 9; padding: 8px 14px; border-radius: 14px; background: rgba(20, 18, 31, 0.72); font: 400 15px/1.1 var(--display); pointer-events: none; }
+  #toasts { position: fixed; z-index: 30; left: 50%; translate: -50% 0; top: 24%; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; width: max-content; max-width: 92vw; }
+  .toast { font-family: var(--display); font-size: clamp(15px, 2.5vw, 24px); line-height: 1.15; text-align: center; color: #fff; padding: 5px 14px 7px; border-radius: 16px;
+    background: rgba(20, 18, 31, 0.66); -webkit-text-stroke: 1.2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink); animation: tin 0.25s ease-out; }
+  .toast.treat { color: #ffe2a0; } .toast.good { color: #b6ff8a; } .toast.super { color: #ffd400; font-size: clamp(18px, 3.2vw, 30px); } .toast.info { color: #c9e8ff; }
+  .toast.out { opacity: 0; transition: opacity 0.3s; }
+  @keyframes tin { from { transform: scale(0.6); opacity: 0; } }
+  #water { position: fixed; inset: 0; background: rgba(40, 130, 220, 0.28); pointer-events: none; z-index: 8; }
+  #sticker { position: fixed; z-index: 31; left: 50%; top: 50%; translate: -50% -50%; padding: 16px 26px; text-align: center; pointer-events: none; animation: stick 0.5s cubic-bezier(.2, 1.6, .5, 1); }
+  #sticker .emo { font-size: 84px; display: block; line-height: 1.05; }
+  #sticker b { display: block; font: 400 clamp(18px, 3vw, 26px)/1.1 var(--display); }
+  #sticker small { display: block; font: 800 14px/1.3 var(--round); color: #4a4560; margin-top: 4px; }
+  @keyframes stick { from { transform: scale(0.2) rotate(-20deg); opacity: 0; } }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 32; overflow: hidden; }
+  #confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(var(--r)); } }
+
+  /* touch controls */
+  #touch { position: fixed; inset: 0; z-index: 11; pointer-events: none; }
+  #touch > * { pointer-events: auto; }
+  #stick { position: absolute; left: calc(max(var(--gutter), env(safe-area-inset-left)) + 10px); bottom: max(16px, env(safe-area-inset-bottom)); width: 132px; height: 132px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22); border: 4px solid rgba(255, 255, 255, 0.7); box-shadow: 0 0 0 3px rgba(20, 18, 31, 0.5); touch-action: none; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); border: 4px solid var(--ink); pointer-events: none; }
+  #acts { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(2, auto); gap: 10px; }
+  .abtn { width: 76px; height: 76px; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink); font: 400 11px/1 var(--display); touch-action: none; }
+  .abtn .emo { font-size: 28px; line-height: 1.05; }
+  .abtn.down, .abtn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+  #placeBtn { background: var(--green); } #breakBtn { background: #ff9a8a; } #jumpBtn { background: var(--cyan); } #downBtn { background: #c9b8ff; }
+  #downBtn.off { visibility: hidden; }
+
+  /* panels */
+  .panel { padding: clamp(12px, 2.4vh, 20px) clamp(14px, 3vw, 26px); width: min(760px, 100%); }
+  .panel h2 { font: 400 clamp(20px, 3.4vw, 30px)/1.1 var(--display); margin-bottom: 10px; }
+  .picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .pick { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; border-radius: 14px; background: #f1ecdc; border: 3px solid transparent; font: 800 12px/1.1 var(--round); color: var(--ink); }
+  .pick img { width: 52px; height: 52px; }
+  .pick:active, .pick.on { border-color: var(--ink); background: #fff3b0; }
+  .picker-slots { display: flex; gap: 4px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .picker-slots .slot { background: #e6e0cc; border-color: #c9c1a8; }
+  .picker-slots .slot.sel { background: #fff3b0; border-color: var(--ink); box-shadow: 0 0 0 3px var(--yellow); }
+  .qrow { display: flex; gap: 12px; align-items: center; text-align: left; padding: 10px 6px; border-bottom: 2px dashed #d8d0b8; }
+  .qrow:last-of-type { border-bottom: 0; }
+  .qrow .emo { font-size: 40px; flex: none; width: 52px; text-align: center; }
+  .qrow.off .emo { filter: grayscale(1) opacity(0.5); }
+  .qrow b { display: block; font: 400 clamp(14px, 2.2vw, 18px)/1.15 var(--display); }
+  .qrow small { display: block; font: 700 14px/1.3 var(--round); color: #4a4560; margin-top: 3px; }
+  .qrow .done { margin-left: auto; font: 400 14px/1 var(--display); color: #2a9d3a; white-space: nowrap; }
+  .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .menu .btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; }
+  .menu .btn .emo { font-size: 34px; }
+  .stickers { font-family: var(--emoji); font-size: 54px; letter-spacing: 6px; }
+
+  /* small screens */
+  .short { --slot: 36px; }
+  .short .chip small { display: none; }
+  .short .chip { height: 44px; }
+  .short .ibtn { width: 42px; height: 42px; font-size: 19px; }
+  .short #quest { height: 42px; padding: 4px 10px; font-size: 13px; }
+  .short .abtn { width: 64px; height: 64px; border-radius: 20px; }
+  .short .abtn .emo { font-size: 24px; }
+  .short #stick { width: 116px; height: 116px; }
+  .short #acts { gap: 8px; }
+  .short .call { width: 46px; height: 46px; }
+  .narrow { --slot: 34px; }
+  .narrow #quest { top: calc(max(8px, env(safe-area-inset-top)) + 60px); }
+  .narrow #toolHint { top: calc(max(8px, env(safe-area-inset-top)) + 112px); }
+  .narrow .chip small { display: none; }
+  .touch.short #tools, .touch.narrow #tools { display: none; }
+  .touch.short #tools.open, .touch.narrow #tools.open { display: flex; top: calc(max(8px, env(safe-area-inset-top)) + 56px); translate: 0 0; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: min(300px, 60vw); }
+  .touch.short #toolsBtn, .touch.narrow #toolsBtn { display: grid; }
+  .touch.narrow #hotbar { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 168px); }
+  .touch.narrow #selName { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 168px + var(--slot) + 24px); }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="water" class="hidden"></div>
+<div id="crosshair" class="hidden"></div>
+
+<!-- playing -->
+<div id="hud" class="hidden">
+  <div id="tl">
+    <div class="chip" id="meChip"><img id="meFace" alt=""><div><b id="meName">TOMMY</b><small id="meMode">🐣 FLYING</small></div></div>
+    <button class="call" id="callBtn" title="Call your brother (T)" aria-label="Call your brother"><img id="callFace" alt=""><kbd>T</kbd></button>
+    <button class="ibtn callmenu" id="callMenuBtn" title="Pick what he builds (B)" aria-label="Pick what he builds">▾</button>
+  </div>
+  <button id="quest" title="Quests (Q)" aria-label="Quests"></button>
+  <div id="tr">
+    <button class="ibtn hidden" id="turnBtn" title="Swap turns (Tab)" aria-label="Swap turns">🔄<kbd>Tab</kbd></button>
+    <button class="ibtn" id="toolsBtn" title="Tools" aria-label="Tools">🛠️</button>
+    <button class="ibtn" id="viewBtn" title="Camera (V)" aria-label="Camera">🎥<kbd>V</kbd></button>
+    <button class="ibtn" id="dayBtn" title="Day or night (N)" aria-label="Day or night">🌙<kbd>N</kbd></button>
+    <button class="ibtn" id="muteBtn" title="Sound (M)" aria-label="Sound on or off">🔊</button>
+    <button class="ibtn" id="pauseBtn" title="Pause (P)" aria-label="Pause">⏸️</button>
+  </div>
+  <div id="tools">
+    <button class="tbtn" id="undoBtn" title="Undo (Z)"><span class="emo">↩️</span>UNDO<kbd>Z</kbd></button>
+    <button class="tbtn" id="fillBtn" title="Fill a box (F)"><span class="emo">📦</span>FILL<kbd>F</kbd></button>
+    <button class="tbtn" id="mirrorBtn" title="Mirror building (G)"><span class="emo">🦋</span>MIRROR<kbd>G</kbd></button>
+    <button class="tbtn" id="rulerBtn" title="Ruler (R)"><span class="emo">📏</span>RULER<kbd>R</kbd></button>
+  </div>
+  <div id="toolHint" class="hidden"></div>
+  <div id="selName"></div>
+  <div id="hotbar"></div>
+</div>
+<div id="lookHint" class="hidden">🖱️ CLICK TO LOOK AROUND</div>
+<div id="touch" class="hidden">
+  <div id="stick"><div id="knob"></div></div>
+  <div id="acts">
+    <button class="abtn" id="downBtn" aria-label="Down"><span class="emo">⬇️</span>DOWN</button>
+    <button class="abtn" id="jumpBtn" aria-label="Jump"><span class="emo">⬆️</span>JUMP</button>
+    <button class="abtn" id="breakBtn" aria-label="Break"><span class="emo">⛏️</span>BREAK</button>
+    <button class="abtn" id="placeBtn" aria-label="Place"><span class="emo">🧱</span>PLACE</button>
+  </div>
+</div>
+<div id="toasts"></div>
+<div id="confetti"></div>
+<div id="sticker" class="card hidden"></div>
+
+<!-- the title -->
+<div id="title" class="screen hidden">
+  <div class="logo"><small>TEDDY &amp; TOMMY</small><big id="logoBig" data-no-lang></big></div>
+  <p class="tag">Build anything you like on your own little island!</p>
+  <div class="profiles">
+    <button class="prof card tommy" id="pickTommy"><img id="faceTommy" alt=""><span><b>TOMMY</b><small>Build, fly and find the stars</small></span><span class="go">▶ PLAY</span><kbd>1</kbd></button>
+    <button class="prof card teddy" id="pickTeddy"><img id="faceTeddy" alt=""><span><b>TEDDY</b><small>Build big and explore</small></span><span class="go">▶ PLAY</span><kbd>2</kbd></button>
+  </div>
+  <div class="row">
+    <button class="btn alt small" id="pickTwo">👥 2 PLAYERS <kbd>3</kbd></button>
+    <div class="seg" id="diffSeg"><button data-d="easy" class="on">🐣 EASY</button><button data-d="normal">🔥 NORMAL</button></div>
+  </div>
+  <div class="row"><span class="score" id="titleScore"></span></div>
+  <p class="keys">1 Tommy · 2 Teddy · 3 two players · E easy or normal</p>
+  <div class="credit">Made with <b>Claude Code</b></div>
+</div>
+
+<!-- the worlds -->
+<div id="worlds" class="screen dim hidden">
+  <p class="big">MY WORLDS</p>
+  <p class="tag" id="worldsWho"></p>
+  <div class="wlist" id="wlist"></div>
+  <button class="btn ghost small" id="worldsBack">◀ BACK <kbd>Esc</kbd></button>
+</div>
+
+<!-- the block picker -->
+<div id="picker" class="screen dim hidden">
+  <div class="panel card">
+    <h2>PICK A BLOCK</h2>
+    <div class="picks" id="picks"></div>
+    <div class="picker-slots" id="pickerSlots"></div>
+    <p class="keys" style="color:#4a4560;text-shadow:none;margin-top:8px">Tap a block to put it in the yellow slot · 1 – 9 pick a slot · E or Esc close</p>
+  </div>
+  <button class="btn small" id="pickerDone">✔ DONE <kbd>E</kbd></button>
+</div>
+
+<!-- the quests -->
+<div id="quests" class="screen dim hidden">
+  <div class="panel card" id="questPanel"></div>
+  <div class="row"><button class="btn alt small" id="hintBtn">⭐ SHOW ME A STAR</button><button class="btn small" id="questsDone">✔ OK <kbd>Q</kbd></button></div>
+</div>
+
+<!-- what the brother builds -->
+<div id="buddyMenu" class="screen dim hidden">
+  <p class="big" id="buddyTitle">WHAT SHALL TOMMY BUILD?</p>
+  <div class="panel card"><div class="menu" id="buddyPicks"></div></div>
+  <button class="btn ghost small" id="buddyBack">◀ BACK <kbd>Esc</kbd></button>
+</div>
+
+<!-- paused -->
+<div id="pause" class="screen dim hidden">
+  <p class="big">PAUSED</p>
+  <p class="tag" id="pauseWorld"></p>
+  <div class="row">
+    <button class="btn" id="resumeBtn">▶ RESUME <kbd>P</kbd></button>
+    <button class="btn mint" id="saveBtn">💾 SAVE</button>
+  </div>
+  <div class="row">
+    <div class="seg" id="pauseDiff"><button data-d="easy">🐣 EASY</button><button data-d="normal">🔥 NORMAL</button></div>
+  </div>
+  <div class="row">
+    <button class="btn ghost small" id="toWorlds">🏝️ MY WORLDS</button>
+    <button class="btn ghost small" id="toTitle">🏠 TITLE</button>
+  </div>
+  <p class="keys">Press ? to see all the keys</p>
+</div>
+
+<!-- all the quests done -->
+<div id="win" class="screen dim hidden">
+  <p class="big" id="winTitle">ALL THE QUESTS DONE!</p>
+  <div class="stickers" id="winStickers"></div>
+  <p class="tag" id="winScore"></p>
+  <div class="row">
+    <button class="btn" id="againBtn">🏝️ PLAY AGAIN <kbd>Enter</kbd></button>
+    <button class="btn mint" id="keepBtn">🧱 KEEP BUILDING</button>
+  </div>
+</div>
+
+<script src="kit/three.min.js"></script>
+<script src="kit/gfx.js"></script>
+<script src="kit/people.js"></script>
+<script src="kit/roster.js"></script>
+<script src="kit/portraits.js"></script>
+<script src="kit/sound.js"></script>
+<script src="kit/lang.js"></script>
+<script src="kit/help.js"></script>
+<script src="js/title.js"></script>
+<script src="js/core.js"></script>
+<script src="js/blocks.js"></script>
+<script src="js/world.js"></script>
+<script src="js/mesher.js"></script>
+<script src="js/quests.js"></script>
+<script src="js/build.js"></script>
+<script src="js/player.js"></script>
+<script src="js/animals.js"></script>
+<script src="js/save.js"></script>
+<script src="js/session.js"></script>
+<script src="js/check.js"></script>
+<script src="js/art.js"></script>
+<script src="js/render.js"></script>
+<script src="js/actors.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/buddy.js"></script>
+<script src="js/input.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/keys.js"></script>
+<script src="js/zh.js"></script>
+</body>
+</html>
